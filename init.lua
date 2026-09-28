@@ -733,7 +733,12 @@ do
   --  See `:help lsp-config` for information about keys and how to configure
   ---@type table<string, vim.lsp.Config>
   local servers = {
-    clangd = {},
+    clangd = {
+      cmd = {
+       vim.fn.expand '~/.local/opt/esp-clangd/bin/clangd',
+       '--query-driver=' .. os.getenv('HOME') .. '/.platformio/packages/toolchain-*/bin/*',
+      },
+    },
     -- gopls = {},
     -- pyright = {},
     -- tsc = {},
