@@ -734,10 +734,15 @@ do
   ---@type table<string, vim.lsp.Config>
   local servers = {
     clangd = {
-      cmd = {
-       vim.fn.expand '~/.local/opt/esp-clangd/bin/clangd',
-       '--query-driver=' .. os.getenv('HOME') .. '/.platformio/packages/toolchain-*/bin/*',
-      },
+      cmd = function(dispatchers, config)
+        local root = config.root_dir or vim.fn.getcwd()
+        local is_pio = vim.uv.fs_stat(root .. '/platformio.ini') ~= nil
+        local bin = is_pio and vim.fn.expand '~/.local/opt/esp-clangd/bin/clangd' or 'clangd'
+        return vim.lsp.rpc.start({
+          bin,
+          '--query-driver=' .. os.getenv('HOME') .. '/.platformio/packages/toolchain-*/bin/*',
+        }, dispatchers, { cwd = root })
+      end,      
     },
     -- gopls = {},
     -- pyright = {},
@@ -1028,7 +1033,7 @@ do
   -- NOTE: You can add your own plugins, configuration, etc. in `lua/custom/plugins/*.lua`.
   --
   -- For independent modules, uncomment the convenience loader:
-  require 'custom.plugins'
+   require 'custom.plugins'
   --
   -- `custom.plugins` automatically loads files from that directory, but their
   -- order is unspecified. If plugins depend on each other, keep them in the same
